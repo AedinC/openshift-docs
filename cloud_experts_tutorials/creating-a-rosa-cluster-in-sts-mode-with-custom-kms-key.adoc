@@ -19,7 +19,7 @@ toc::[]
 //---
 
 
-[TIP] 
+[TIP]
 ====
 Official Documentation link:https://docs.openshift.com/rosa/rosa_getting_started/rosa-sts-creating-a-cluster-with-customizations.html#rosa-sts-creating-cluster-customizations_rosa-sts-creating-a-cluster-with-customizations[ROSA STS with custom KMS key]
 
