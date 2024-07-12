@@ -23,7 +23,7 @@ toc::[]
 ====
 Official Documentation link:https://docs.openshift.com/rosa/rosa_getting_started/rosa-sts-creating-a-cluster-with-customizations.html#rosa-sts-creating-cluster-customizations_rosa-sts-creating-a-cluster-with-customizations[ROSA STS with custom KMS key]
 
-This guide will walk you through installing ROSA (Red Hat OpenShift Service on AWS) with a customer-provided KMS key that will be used to encrypt both the root volumes of nodes as well as persistent volumes for mounted EBS claims.
+Learn how to install ROSA (Red Hat OpenShift Service on AWS) with a customer-provided KMS key that will be used to encrypt both the root volumes of nodes as well as persistent volumes for mounted EBS claims.
 ====
 == Prerequisites
 
