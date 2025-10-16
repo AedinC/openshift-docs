@@ -1,0 +1,20 @@
+:_mod-docs-content-type: ASSEMBLY
+include::_attributes/common-attributes.adoc[]
+include::_attributes/attributes-openshift-dedicated.adoc[]
+[id="virt-deploying-vms-osd-gcp"]
+= Deploying virtual machines on {product-title}
+
+:context: virt-deploying-vms-osd-gcp
+
+toc::[]
+
+[role="_abstract"]
+Deploy virtual machines (VMs) on an {product-title} cluster on {gcp-full} by configuring the HyperConverged Operator, creating a {gcp-short} Hyperdisk Balanced storage pool, and creating a custom StorageClass. This configuration optimizes VM performance by leveraging {gcp-short} storage for VM disks.
+
+include::modules/virt-creating-vms-osd-gcp.adoc[leveloffset=+1]
+
+include::modules/virt-osd-gcp-live-migration.adoc[leveloffset=+1]
+
+[role="_additional-resources"]
+== Additional resources
+* xref:../../virt/live_migration/virt-initiating-live-migration.adoc#virt-canceling-vm-migration-web_virt-initiating-live-migration[Initiating and canceling live migration]

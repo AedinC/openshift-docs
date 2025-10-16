@@ -1,0 +1,71 @@
+// Module included in the following assemblies:
+//
+// * virt/install/virt-deploying-vms-osd-gcp.adoc
+
+:_mod-docs-content-type: PROCEDURE
+[id="virt-creating-vms-osd-gcp_{context}"]
+= Creating virtual machines on {product-title}
+
+[role="_abstract"]
+Create VMs on {product-title} clusters running on {gcp-full} with optimal performance by leveraging {gcp-short} storage.
+
+.Prerequisites
+
+* An existing {product-title} cluster on {gcp-full} version 4.21 and later with C3-metal as the instance type for compute nodes
+* Access to the {gcp-short} console with permissions to manage storage pools
+* {oc-first} or {product-title} web console access with `cluster-admin` privileges
+* A {VirtProductName} Operator installed from the OperatorHub
+
+.Procedure
+
+. To ensure the virtualization layer can properly handle volume imports, you must patch the `kubevirt-hyperconverged` instance. This adds the `dataImportCronTemplates` specification, allowing for automated image updates and consistent access modes.
+Apply a patch to your HyperConverged resource to include the required storage specifications for your environment's access modes.
+. For high-performance VM disks on C3-metal nodes, you must use a dedicated storage pool. Log in to the {gcp-short} console.
+.. Navigate to *Compute Engine* > *Storage pools*.
+.. Create a Hyperdisk Balanced storage pool.
++
+[IMPORTANT]
+====
+Ensure the pool is created in the same zone as your C3-metal compute nodes (for example, `us-east1-c`).
+====
++
+. Now link your {gcp-short} storage pool to {product-title} by creating a custom StorageClass.
+.. Apply the following YAML to your cluster. This configuration uses the {gcp-short} CSI provisioner and sets this class as the default.
++
+[source,yaml]
+----
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: osdvirt-storageclass
+  annotations:
+    storageclass.kubernetes.io/is-default-class: 'true'
+provisioner: pd.csi.storage.gke.io
+parameters:
+  replication-type: none
+  storage-pools: projects/<project-id>/zones/<zone>/storagePools/<storage-pool-name>
+  type: hyperdisk-balanced
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+----
++
+Replace `<project-id>`, `<zone>`, and `<storage-pool-name>` with the values for your {gcp-short} project, zone (for example, `us-east1-c`), and storage pool name.
++
+[TIP]
+====
+Setting this as the default storage class (via the `storageclass.kubernetes.io/is-default-class` annotation) simplifies VM creation by automatically selecting this high-performance tier for new disks.
+====
+
+. Once the StorageClass is active, the *Bootable Volumes* section under the *Virtualization* menu will populate with available images.
+. Open the {product-title} web console and create a new project for your VM workload.
+. Access the catalog: Navigate to *Virtualization* > *Catalog*.
+.. Configure the instance:
+* **Boot source:** Select the desired volume or operating system image.
+* **Instance type:** Choose the appropriate size for your workload.
+* **General settings:** Name the VM and verify the *Project*, *Disk size*, and *StorageClass* (should default to `osdvirt-storageclass`).
+. Click *Create VirtualMachine*.
+
+.Verification
+
+* The VM will provision within minutes. You can monitor its status and access the console on the *Virtual Machine details* page.

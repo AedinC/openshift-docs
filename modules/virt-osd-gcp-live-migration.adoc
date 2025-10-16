@@ -1,0 +1,17 @@
+// Module included in the following assemblies:
+//
+// * virt/install/virt-deploying-vms-osd-gcp.adoc
+
+:_mod-docs-content-type: PROCEDURE
+[id="virt-osd-gcp-live-migration_{context}"]
+= Migrating a VM to a different node on {product-title} clusters on {gcp-full}
+
+[role="_abstract"]
+Because this setup utilizes shared storage pools and C3-metal nodes, you can perform live migrations to balance node load or perform maintenance.
+
+.Procedure
+
+. Navigate to the *Actions* menu of your running VM.
+. Select *Migrate* > *Compute: Migrate Virtual Machine to a different node*. The system automatically moves the workload to another available C3-metal node within the cluster without downtime.
+
+

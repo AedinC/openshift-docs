@@ -8,6 +8,11 @@
 [role="_abstract"]
 The following items were added during the first quarter of 2026.
 
+*  **Virtualization support for {product-title} on {GCP}.** {product-title} on {GCP} now supports running virtualized workloads using the OpenShift Virtualization operator. This allows you to run both containerized and virtualized workloads on the same cluster, providing flexibility for a wider range of applications and use cases.
++
+For more information about using OpenShift Virtualization on {product-title} on {gcp}, see link:https://docs.redhat.com/en/documentation/openshift_dedicated/4/html/virtualization/index[Virtualization].
+//link to Virtualization 4.21.z release note documentation to be added when available
+
 * **{product-title} now available in {GCP} console.**
 {product-title} is now available directly within the link:https://console.cloud.google.com/redhat-openshift/landing[{GCP} console], making it easier to find and deploy alongside native {GCP} services. This integration simplifies the initial setup by allowing you to validate environment prerequisites for {product-title} cluster deployment.
 +
