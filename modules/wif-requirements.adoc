@@ -1,0 +1,29 @@
+// Module included in the following assemblies:
+//
+// * osd_gcp_clusters/osd-creating-a-cluster-on-gcp-with-workload-identity-federation.adoc
+
+
+:_mod-docs-content-type: CONCEPT
+[id="workload-identity-federation-requirements_{context}"]
+= Workload Identity Federation requirements
+
+You must complete the following prerequisites before xref:../osd_gcp_clusters/creating-a-gcp-cluster-with-workload-identity-federation.adoc#create-wif-cluster-ocm_osd-creating-a-cluster-on-gcp-with-workload-identity-federation[Creating a Workload Identity Federation cluster using OpenShift Cluster Manager] and xref:../osd_gcp_clusters/creating-a-gcp-cluster-with-workload-identity-federation.adoc#create-wif-cluster-cli_osd-creating-a-cluster-on-gcp-with-workload-identity-federation[Creating a Workload Identity Federation cluster using the OCM CLI].
+
+* You have confirmed your {gcp-full} account has the necessary resource quotas and limits to support your desired cluster size according to the cluster resource requirements.
++
+[NOTE]
+====
+For more information regarding resource quotas and limits, see _Resource quotas per project_ in the _Additional resources_ section.
+====
++
+* You have reviewed the xref:../osd_architecture/osd-understanding.adoc#osd-understanding[introduction to {product-title}] and the documentation on xref:../architecture/index.adoc#architecture-overview[architecture concepts].
+* You have reviewed the xref:../osd_getting_started/osd-understanding-your-cloud-deployment-options.adoc#osd-understanding-your-cloud-deployment-options[{product-title} cloud deployment options].
+* You have read and completed the xref:../osd_planning/gcp-ccs.adoc#ccs-gcp-customer-procedure_gcp-ccs[Required customer procedure].
+
+[NOTE]
+====
+WIF supports the deployment of a private {product-title} on {GCP} cluster with Private Service Connect (PSC). Red Hat recommends using PSC when deploying private clusters.
+For more information about the prerequisites for PSC, see xref:../osd_gcp_clusters/creating-a-gcp-psc-enabled-private-cluster.adoc#private-service-connect-prereqs[Prerequisites for Private Service Connect].
+====
+
+
