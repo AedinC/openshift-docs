@@ -5,6 +5,9 @@
 [id="osd-q4-2025_{context}"]
 = Q4 2025
 
+[role="_abstract"]
+The following items were added during the fourth quarter of 2025.
+
 * **Required API services table updated.**
 The _Required API services_ table within the _Required customer procedure_ guide has been updated to restore APIs that were previously removed due to a bug. These APIs are required for new {product-title} on {GCP} cluster creation. For more information, see link:https://docs.redhat.com/en/documentation/openshift_dedicated/4/html/planning_your_environment/gcp-ccs#ccs-gcp-customer-procedure_gcp-ccs[Required customer procedure].
 
