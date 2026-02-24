@@ -8,6 +8,13 @@
 [role="_abstract"]
 The following items were added during the first quarter of 2026.
 
+* **{product-title} managed DNS zones now available.**
+You can now create and manage your own DNS zones for Shared VPC deployments on {GCP}, giving you greater control over your {product-title} cluster's network configuration and security. This new capability allows you to maintain ownership of your DNS infrastructure while still leveraging the powerful features of {product-title}.
++
+By using managed DNS zones, you can ensure that your cluster's DNS records are managed according to your organization's policies and compliance requirements, without granting broad administrative access to your host projects. This improvement enhances security and provides a more flexible deployment option for customers with strict governance needs.
++
+For more information about managed DNS zones for {product-title} on {GCP}, see link:https://docs.redhat.com/en/documentation/openshift_dedicated/4/html/planning_your_environment/gcp-ccs#ocm-cli-create-managed-dns-zone_gcp-ccs[Creating a managed DNS zone].
+
 * **{product-title} now available in {GCP} console.**
 {product-title} is now available directly within the link:https://console.cloud.google.com/redhat-openshift/landing[{GCP} console], making it easier to find and deploy alongside native {GCP} services. This integration simplifies the initial setup by allowing you to validate environment prerequisites for {product-title} cluster deployment.
 +
