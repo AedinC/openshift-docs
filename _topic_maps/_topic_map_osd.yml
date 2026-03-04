@@ -1600,6 +1600,9 @@ Topics:
   Topics:
   - Name: Storage configuration overview
     File: virt-storage-config-overview
+  - Name: KubeVirt storage configuration for Google Cloud
+    File: virt-storage-config-gcp-4-21
+    Distros: openshift-dedicated
   - Name: Configuring storage profiles
     File: virt-configuring-storage-profile
   - Name: Managing automatic boot source updates

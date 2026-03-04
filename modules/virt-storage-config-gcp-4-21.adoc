@@ -1,0 +1,110 @@
+// Module included in the following assemblies:
+//
+// * virt/storage/virt-storage-config-gcp-4-21.adoc
+
+:_mod-docs-content-type: PROCEDURE
+[id="virt-storage-config-gcp-_{context}"]
+= Configuring {VirtProductName} storage on {gcp-full}
+
+[role="_abstract"]
+On {gcp-short}, standard snapshots using `pd.csi.storage.gke.io` are limited to 6 restores per hour per snapshot. Using a `VolumeSnapshotClass` with `snapshot-type: images` enables unlimited restores. Image-type snapshots cannot be created from ReadWriteMany (RWX) PVCs; they must use ReadWriteOnce (RWO) sources. They can be restored to RWX volumes (for example, for live migration). For more information, see link:https://cloud.google.com/compute/docs/disks/performance-overview[{gcp-short} documentation].
+
+In {VirtProductName} this leads to two `VolumeSnapshotClass` resources:
+
+* A `VolumeSnapshotClass` with `snapshot-type: images` for DataImportCron (golden) images.
+* A `VolumeSnapshotClass` without `snapshot-type: images` for regular VM snapshots.
+
+In 4.21.1 and later, CDI adds `StorageProfile` annotations so that DataImportCron automatically uses RWO and the images `VolumeSnapshotClass` (see the note after Step 2). You still must create the `VolumeSnapshotClass` with `snapshot-type: images` in 4.21; it is not yet provisioned by the {GCP} PD CSI driver operator.
+
+.Prerequisites
+
+* {VirtProductName} 4.21.x deployed on {gcp-short}
+* {GCP} PD CSI driver installed and configured
+* Cluster admin access to create a StorageClass and apply a VolumeSnapshotClass
+
+.Procedure
+
+. Optional: If you do not already have a default Hyperdisk StorageClass, create one first. It will be used for regular VM snapshots and for VM disks.
+.. Create a file named `hyperdisk-storageclass.yaml` with the following content:
++
+[source,yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: sp-balanced-storage
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+    storageclass.kubevirt.io/is-default-virt-class: "true"
+allowVolumeExpansion: true
+parameters:
+  storage-pools: projects/<project-name>/zones/<location+zone>/storagePools/<pool-name>
+  type: hyperdisk-balanced
+provisioner: pd.csi.storage.gke.io
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+----
+
+.. Replace `<project-name>`, `<location+zone>`, and `<pool-name>` with values for your environment. To create a storage pool, see link:https://cloud.google.com/compute/docs/disks/hyperdisk-create-pool[Create a Hyperdisk pool] in the {gcp-short} documentation.
+
+. Apply the `StorageClass` to your cluster:
++
+[source,terminal]
+----
+$ oc apply -f hyperdisk-storageclass.yaml
+----
++
+[IMPORTANT]
+====
+* Configure this `StorageClass` as the cluster default and as the {VirtProductName} default (virt-default).
+* Specifying `storage-pools` is highly recommended; it enables thin-provisioning and other benefits.
+====
++
+. {gcp-short} clusters include a `standard-csi StorageClass` set as default. After creating the Hyperdisk `StorageClass` as the new default, remove the default annotation from `standard-csi` to avoid having two default StorageClasses:
++
+[source,terminal]
+----
+$ oc annotate storageclass standard-csi storageclass.kubernetes.io/is-default-class-
+----
++
+. Verify only your Hyperdisk `StorageClass` is marked as default:
++
+[source,terminal]
+----
+$ oc get storageclass
+----
++
+. The {GCP} PD CSI driver operator does not yet provision this class in 4.21. Create it manually by applying the official asset:
++
+[source,terminal]
+----
+$ oc apply -f https://raw.githubusercontent.com/openshift/gcp-pd-csi-driver-operator/main/assets/volumesnapshotclass_images.yaml
+----
++
+This creates a `VolumeSnapshotClass` named `csi-gce-pd-vsc-images` with `snapshot-type: images`. It is not set as the default, so regular VM snapshots continue to use your default `VolumeSnapshotClass`.
+
+[NOTE]
+====
+From 4.21 onward, CDI adds two annotations to the `StorageProfile` so that golden images are automatically created on the correct `VolumeSnapshotClass`. No user configuration is required. The `StorageProfile` uses:
+
+* `cdi.kubevirt.io/useReadWriteOnceForDataImportCron`: RWO access mode for DataImportCron PVCs when not explicitly configured.
+* `cdi.kubevirt.io/snapshotClassForDataImportCron`: The `VolumeSnapshotClass` name for DataImportCron (CDI can auto-discover a matching VolumeSnapshotClass with the required parameters).
+
+For implementation details, see the containerized-data-importer repository.
+====
+
+.Verification
+
+. Confirm the VolumeSnapshotClass exists:
++
+[source,terminal]
+----
+$ oc get volumesnapshotclass csi-gce-pd-vsc-images -o yaml | grep snapshot-type
+----
++
+. After golden images are imported, check that snapshots use `csi-gce-pd-vsc-images`:
++
+[source,terminal]
+----
+$ oc get volumesnapshot --all-namespaces -o yaml | grep csi-gce-pd-vsc-images
+----

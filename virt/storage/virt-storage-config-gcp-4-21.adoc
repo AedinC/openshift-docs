@@ -1,0 +1,14 @@
+:_mod-docs-content-type: ASSEMBLY
+include::_attributes/common-attributes.adoc[]
+include::_attributes/attributes-openshift-dedicated.adoc[]
+[id="virt-storage-config-gcp-4-21"]
+= KubeVirt storage configuration for {gcp-short}
+
+:context: virt-storage-config-gcp-4-21
+
+toc::[]
+
+[role="_abstract"]
+Configure {VirtProductName} storage on {gcp-full} by creating a Hyperdisk StorageClass and a `VolumeSnapshotClass` with `snapshot-type: images` for DataImportCron (golden) images and unlimited snapshot restores.
+
+include::../../modules/virt-storage-config-gcp-4-21.adoc[leveloffset=+1]

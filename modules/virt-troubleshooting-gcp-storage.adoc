@@ -1,0 +1,140 @@
+// Module included in the following assemblies:
+//
+// * virt/support/virt-troubleshooting.adoc (openshift-dedicated only)
+
+:_mod-docs-content-type: REFERENCE
+[id="virt-troubleshooting-gcp-storage_{context}"]
+= Known {gcp-short} errors and limitations for {VirtProductName} storage
+
+[role="_abstract"]
+Known errors, quotas, and platform limitations when running `KubeVirt` ({VirtProductName}) on {gcp-full} with the `pd.csi.storage.gke.io` Container Storage Interface (CSI) driver and Hyperdisk Balanced storage are listed below. These issues originate on the {gcp-short} side and can surface during normal {VirtProductName} operations or testing.
+
+[id="virt-gcp-storage-min-disk-size_{context}"]
+== Hyperdisk Balanced minimum disk size (4 GB)
+
+*Error:*
+
+[source,text]
+----
+googleapi: Error 400: Disk size cannot be smaller than 4 GB for disk type hyperdisk-balanced., badRequest
+----
+
+*When it occurs:* Any persistent volume claims (PVC) requesting less than 4 GB with a Hyperdisk Balanced `StorageClass`.
+
+*Impact:* PVC stays in `Pending` state indefinitely. VMs that depend on the PVC will not start.
+
+*Mitigation:* Always request at least 4 Gi, or use the `cdi.kubevirt.io/applyStorageProfile` label on PVCs so that CDI's StorageProfile `minimumSupportedPvcSize: 4Gi` auto-adjusts the size.
+
+[id="virt-gcp-storage-volume-attachment-limit_{context}"]
+== Volume attachment limit per node (15 volumes)
+
+*Error:*
+
+[source,text]
+----
+FailedScheduling: 0/N nodes are available: 1 node(s) exceed max volume count
+----
+
+*When it occurs:* Attaching more than approximately 15 Hyperdisk Balanced volumes to a single node. The CSI driver reports `allocatable.count: 15` on worker nodes.
+
+*Impact:* Pods requiring additional volume attachments beyond the limit cannot be scheduled. Hotplug operations stall at `AttachedToNode` and never transition to `Ready`.
+
+*Details:* This limit is reported by the {gcp-short} PD CSI driver in the `CSINode` object:
+
+[source,terminal]
+----
+$ oc get csinode <node-name> -o jsonpath='{.spec.drivers[?(@.name=="pd.csi.storage.gke.io")].allocatable.count}'
+----
+
+*Mitigation:* Spread volumes across multiple nodes. For workloads requiring many volumes per node, investigate increasing the attachment limit through node labels (see volume attachment limit override).
+
+[id="virt-gcp-storage-pool-iops-limit_{context}"]
+== Storage pool IOPS overprovisioning limit
+
+*Error:*
+
+[source,text]
+----
+googleapi: Error 400: Adding/updating the disk brings the storage pool's used iops to 52000,
+which exceeds the overprovisioning limit of 50000. Please increase the storage pool's
+provisioned iops., badRequest
+----
+
+*When it occurs:* Creating a new disk when the storage pool's total provisioned IOPS across all disks would exceed the pool's IOPS overprovisioning limit. Each disk in a storage pool is assigned a share of the pool's provisioned IOPS based on its size and type. The total across all disks cannot exceed the pool's limit.
+
+*Impact:* PVC provisioning fails. The disk is not created and the PVC stays in `Pending`.
+
+*Details:* Hyperdisk Balanced IOPS scale at 6 IOPS per GiB with a baseline of 3,000 IOPS per instance. Per-disk and per-instance IOPS limits depend on disk size, machine type, and vCPU count (see link:https://cloud.google.com/compute/docs/disks/performance-overview[Persistent Disk performance overview] in the {gcp-short} documentation). When using storage pools, the pool's provisioned IOPS acts as an additional aggregate cap.
+
+*Mitigation:* Increase the storage pool's provisioned IOPS, or delete unused disks to free up IOPS headroom. You can check and adjust pool IOPS via the {gcp-short} Console or `gcloud compute storage-pools update`. See link:https://cloud.google.com/compute/docs/disks/hyperdisk-create-pool[Create a Hyperdisk pool] and link:https://cloud.google.com/compute/docs/disks/performance-overview#hyperdisk[Hyperdisk performance and size limits] in the {gcp-short} documentation.
+
+[id="virt-gcp-storage-pool-throughput-limit_{context}"]
+== Storage pool throughput overprovisioning limit
+
+*Error:*
+
+[source,text]
+----
+googleapi: Error 400: Adding/updating the disk brings the storage pool's used throughput to
+10405 MiB/s, which exceeds the overprovisioning limit of 10240 MiB/s. Please increase the
+storage pool's provisioned throughput., badRequest
+----
+
+*When it occurs:* Creating a new disk when the storage pool's total provisioned throughput across all disks would exceed the pool's throughput overprovisioning limit. Each disk in a storage pool is assigned a share of the pool's provisioned throughput. The aggregate across all disks cannot exceed the pool's limit.
+
+*Impact:* PVC provisioning fails. The disk is not created and the PVC stays in `Pending`.
+
+*Details:* Hyperdisk Balanced throughput scales at 0.28 MiBps per GiB with a baseline of 140 MiBps per instance. Per-disk and per-instance throughput limits depend on disk size, machine type, and vCPU count (see link:https://cloud.google.com/compute/docs/disks/performance-overview[Persistent Disk performance overview] in the {gcp-short} documentation). When using storage pools, the pool's provisioned throughput acts as an additional aggregate cap.
+
+*Mitigation:* Increase the storage pool's provisioned throughput, or delete unused disks to free up throughput headroom. You can check and adjust pool throughput via the {gcp-short} Console or `gcloud compute storage-pools update`. See link:https://cloud.google.com/compute/docs/disks/hyperdisk-create-pool[Create a Hyperdisk pool] and link:https://cloud.google.com/compute/docs/disks/performance-overview#hyperdisk[Hyperdisk performance and size limits] in the {gcp-short} documentation.
+
+[id="virt-gcp-storage-disk-resize-rate-limit_{context}"]
+== Disk resize rate limiting
+
+*Errors:*
+
+[source,text]
+----
+googleapi: Error 400: Invalid resource usage: 'Disk cannot be resized due to being rate limited.'
+googleapi: Error 400: Invalid resource usage: 'Disk cannot be resized while there is an ongoing mutation.'
+----
+
+*When it occurs:* Performing rapid or concurrent PVC resize operations. A single resize works fine; back-to-back or parallel resizes on the same or multiple disks trigger the rate limit.
+
+*Impact:* PVC expansion fails with `ControllerResizeError`. The CSI resizer backs off exponentially, and the resize may not complete within expected timeframes. The guest VM does not see the size change.
+
+*Details observed in testing:*
+[cols="1,1", options="header"]
+|===
+|Scenario |Result
+|Single VM, single resize (e.g. 8 Gi to 16 Gi) |Succeeded
+|10 VMs, single resize simultaneously |Succeeded (some took ~30 s for node-level FS resize)
+|10 VMs, double resize (rapid back-to-back) |All 10 PVCs stuck; {gcp-short} returned rate-limit error
+|===
+
+*Mitigation:* Avoid rapid sequential resizes on the same disk. When performing bulk expansions, stagger them or allow each resize to complete before initiating the next.
+
+[id="virt-gcp-storage-no-rwx_{context}"]
+== No native RWX filesystem support
+
+*Symptom:* Operations requiring ReadWriteMany (RWX) Filesystem PVCs fail because {gcp-short} PD only provides ReadWriteOnce (RWO).
+
+*When it occurs:* Any {VirtProductName} feature that requires RWX Filesystem volumes, such as `vmStateStorageClass` for CBT live migration.
+
+*Impact:* Features like CBT across live migration are not available without an additional RWX-capable storage provider.
+
+*Mitigation:* Deploy a separate RWX Filesystem storage solution (for example, {gcp-short} Filestore CSI or NFS) alongside {gcp-short} PD for features that require it.
+
+[id="virt-gcp-storage-quick-reference_{context}"]
+== Quick reference
+
+[cols="2,1,1", options="header"]
+|===
+|Limit / Error |Value |Impact
+|Minimum disk size (Hyperdisk Balanced) |4 GB |PVC creation fails below this
+|Volume attachment limit per node |~15 |Pods fail to schedule beyond this
+|Storage pool IOPS overprovisioning |Pool-defined limit |PVC creation fails when pool IOPS exceeded
+|Storage pool throughput overprovisioning |Pool-defined limit |PVC creation fails when pool throughput exceeded
+|Disk resize rate limit |1 resize at a time per disk |Concurrent/rapid resizes fail
+|RWX Filesystem support |Not available (RWO only) |Features requiring RWX FS need separate storage
+|===
