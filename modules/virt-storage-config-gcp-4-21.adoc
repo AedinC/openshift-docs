@@ -14,7 +14,7 @@ In {VirtProductName} this leads to two `VolumeSnapshotClass` resources:
 * A `VolumeSnapshotClass` with `snapshot-type: images` for DataImportCron (golden) images.
 * A `VolumeSnapshotClass` without `snapshot-type: images` for regular VM snapshots.
 
-In 4.21.1 and later, CDI adds `StorageProfile` annotations so that DataImportCron automatically uses RWO and the images `VolumeSnapshotClass` (see the note after Step 2). You still must create the `VolumeSnapshotClass` with `snapshot-type: images` in 4.21; it is not yet provisioned by the {GCP} PD CSI driver operator.
+In 4.21.1 and later, the Containerized Data Importer (CDI) adds `StorageProfile` annotations so that DataImportCron automatically uses RWO and the images `VolumeSnapshotClass` (see the note after Step 2). You still must create the `VolumeSnapshotClass` with `snapshot-type: images` in 4.21; it is not yet provisioned by the {GCP} PD CSI driver operator.
 
 .Prerequisites
 
@@ -24,7 +24,7 @@ In 4.21.1 and later, CDI adds `StorageProfile` annotations so that DataImportCro
 
 .Procedure
 
-. Optional: If you do not already have a default Hyperdisk StorageClass, create one first. It will be used for regular VM snapshots and for VM disks.
+. Optional: If you do not already have a default Hyperdisk `StorageClass`, create one first. It will be used for regular VM snapshots and for VM disks.
 .. Create a file named `hyperdisk-storageclass.yaml` with the following content:
 +
 [source,yaml]
@@ -82,7 +82,7 @@ $ oc apply -f https://raw.githubusercontent.com/openshift/gcp-pd-csi-driver-oper
 ----
 +
 This creates a `VolumeSnapshotClass` named `csi-gce-pd-vsc-images` with `snapshot-type: images`. It is not set as the default, so regular VM snapshots continue to use your default `VolumeSnapshotClass`.
-
++
 [NOTE]
 ====
 From 4.21 onward, CDI adds two annotations to the `StorageProfile` so that golden images are automatically created on the correct `VolumeSnapshotClass`. No user configuration is required. The `StorageProfile` uses:
@@ -95,7 +95,7 @@ For implementation details, see the containerized-data-importer repository.
 
 .Verification
 
-. Confirm the VolumeSnapshotClass exists:
+. Confirm the `VolumeSnapshotClass` exists:
 +
 [source,terminal]
 ----
