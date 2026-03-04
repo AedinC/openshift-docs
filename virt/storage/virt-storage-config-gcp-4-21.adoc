@@ -9,6 +9,6 @@ include::_attributes/attributes-openshift-dedicated.adoc[]
 toc::[]
 
 [role="_abstract"]
-Configure {VirtProductName} storage on {gcp-full} by creating a Hyperdisk StorageClass and a `VolumeSnapshotClass` with `snapshot-type: images` for DataImportCron (golden) images and unlimited snapshot restores.
+Configure {VirtProductName} storage on {gcp-full} by creating a Hyperdisk `StorageClass` and a `VolumeSnapshotClass` with `snapshot-type: images` for DataImportCron (golden) images and unlimited snapshot restores.
 
-include::../../modules/virt-storage-config-gcp-4-21.adoc[leveloffset=+1]
+include::modules/virt-storage-config-gcp-4-21.adoc[leveloffset=+1]
