@@ -36,6 +36,7 @@ Descheduler
 
 |Provides active resource balancing. A combination of pod eviction policies and a descheduler allows VMs to be live migrated to more appropriate nodes to keep node resource utilization manageable.
 
+ifndef::openshift-dedicated[]
 |NSX
 a|Multus
 
@@ -44,6 +45,14 @@ OVN-Kubernetes
 Third-party container network interface (CNI) plug-ins
 
 |Provides an overlay network configuration. There is no direct equivalent for NSX in {VirtProductName}, but you can use the OVN-Kubernetes network provider or install certified third-party CNI plug-ins.
+endif::openshift-dedicated[]
+
+ifdef::openshift-dedicated[]
+|NSX
+a|OVN-Kubernetes
+
+|Provides an overlay network configuration. There is no direct equivalent for NSX in {VirtProductName}, but you can use the OVN-Kubernetes network provider.
+endif::openshift-dedicated[]
 
 |Storage Policy Based Management (SPBM)
 |Storage class
