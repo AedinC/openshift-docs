@@ -1586,8 +1586,8 @@ Topics:
 #   File: virt-hot-plugging-network-interfaces
   - Name: Connecting a VM to a service mesh
     File: virt-connecting-vm-to-service-mesh
-  - Name: Configuring a dedicated network for live migration
-    File: virt-dedicated-network-live-migration
+#  - Name: Configuring a dedicated network for live migration
+#    File: virt-dedicated-network-live-migration
   - Name: Configuring and viewing IP addresses
     File: virt-configuring-viewing-ips-for-vms
 # # Tech Preview features not supported in ROSA/OSD

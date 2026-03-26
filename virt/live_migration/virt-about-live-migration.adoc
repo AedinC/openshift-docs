@@ -36,7 +36,9 @@ The default number of migrations that can run in parallel in the cluster is 5.
 ====
 
 * If a VM uses a host model CPU, the nodes must support the CPU.
+ifndef::openshift-dedicated[]
 * xref:../../virt/vm_networking/virt-dedicated-network-live-migration.adoc#virt-dedicated-network-live-migration[Configuring a dedicated Multus network] for live migration is highly recommended. A dedicated network minimizes the effects of network saturation on tenant workloads during migration.
+endif::openshift-dedicated[]
 
 include::modules/virt-about-live-migration-permissions.adoc[leveloffset=+1]
 
@@ -63,5 +65,7 @@ You can perform the following live migration tasks:
 == Additional resources
 * xref:../../virt/about_virt/virt-security-policies.adoc#default-cluster-roles-for-virt_virt-security-policies[Default cluster roles for {VirtProductName}]
 * xref:../../virt/monitoring/virt-prometheus-queries.adoc#virt-live-migration-metrics_virt-prometheus-queries[Prometheus queries for live migration]
+ifndef::openshift-dedicated[]
 * xref:../../virt/nodes/virt-node-maintenance.adoc#run-strategies[VM run strategies]
 * xref:../../virt/nodes/virt-node-maintenance.adoc#eviction-strategies[VM and cluster eviction strategies]
+endif::openshift-dedicated[]
